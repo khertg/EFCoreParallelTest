@@ -7,7 +7,7 @@ namespace DataLayer
     {
         public void Configure(EntityTypeBuilder<AssetCollection> builder)
         {
-            builder.ToTable("AssetCollectionV2");
+            builder.ToTable("AssetCollection");
 
             builder.Property(e => e.Id)
                 .HasColumnName("Id")
