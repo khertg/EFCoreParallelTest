@@ -16,6 +16,7 @@ namespace FunctionApp
 
             builder.Services.AddDbContext<MyContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddTransient<IAssetRepository, AssetRepository>();
+
         }
     }
 }

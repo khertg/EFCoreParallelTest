@@ -23,5 +23,10 @@ namespace Repository
             _context.Assets.Update(updatedAsset);
             _context.SaveChanges();
         }
+
+        public AssetCollection GetById(object id)
+        {
+            return _context.Assets.Find(id);
+        }
     }
 }

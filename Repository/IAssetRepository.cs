@@ -9,5 +9,6 @@ namespace Repository
     {
         IEnumerable<AssetCollection> GetAll();
         void Update(AssetCollection updatedAsset);
+        AssetCollection GetById(object id);
     }
 }

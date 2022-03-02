@@ -11,6 +11,8 @@ using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
+using System.Configuration;
+using System.Linq;
 
 namespace FunctionApp
 {
@@ -67,10 +69,10 @@ namespace FunctionApp
                 }
 
                 //var assetRepoContext = scope.ServiceProvider.GetRequiredService<IAssetRepository>();
-                data.Desc = data.Name + " " + DateTime.Now.ToString();
+                //data.Desc = data.Name + " " + DateTime.Now.ToString();
 
-                _context.Assets.Update(data);
-                _context.SaveChanges();
+                //_context.Assets.Update(data);
+                //_context.SaveChanges();
             });
 
             return new OkObjectResult(dataList);
@@ -82,24 +84,46 @@ namespace FunctionApp
         {
             var dataList = await _context.Assets.ToListAsync();
 
-            var task = Task.Run(() =>
-            {
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var scopedContext = scope.ServiceProvider.GetRequiredService<MyContext>();
-
-                    Task.Delay(5000);
-                    var test = scopedContext.Assets.Find(1);
-                    Console.WriteLine(test.Name);
-
-                    //var assetRepoContext = scope.ServiceProvider.GetRequiredService<IAssetRepository>();
-                    //data.Desc = data.Name + " " + DateTime.Now.ToString();
-
-                    //assetRepoContext.Update(data);
-                }
-            });
+            UpdateCache();
 
             return new OkObjectResult(dataList);
+        }
+
+        public void UpdateCache()
+        {
+            Task.Run(() =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
+                optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString", EnvironmentVariableTarget.Process));
+                Task.Delay(10000);
+
+                using (MyContext context = new MyContext(optionsBuilder.Options))
+                {
+                    Task.Delay(20000);
+                    var test = context.Assets.Find(1);
+                    Console.WriteLine(test.Name);
+
+                    var list = context.Assets.ToList();
+                    Console.WriteLine("Asset Count : " + list.Count);
+
+                    context.Dispose();
+                }
+
+                //using (var scope = _scopeFactory.CreateScope())
+                //{
+                //    var scopedContext = scope.ServiceProvider.GetRequiredService<MyContext>();
+
+                //    Task.Delay(5000);
+                //    var test = scopedContext.Assets.Find(1);
+                //    Console.WriteLine(test.Name);
+
+                //    //var assetRepoContext = scope.ServiceProvider.GetRequiredService<IAssetRepository>();
+                //    //Task.Delay(5000);
+
+                //    //var asset = assetRepoContext.GetById(1);
+                //    //Console.WriteLine(asset.Name);
+                //}
+            });
         }
     }
 }
